@@ -6,6 +6,8 @@ COPY package.json yarn.lock ./
 
 RUN yarn --pure-lockfile
 
+RUN mkdir -p ./data
+
 COPY . .
 
 CMD [ "yarn", "start" ]
