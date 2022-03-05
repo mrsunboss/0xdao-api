@@ -1,0 +1,18 @@
+version: "3"
+services:
+  api:
+    build: .
+    command: yarn start
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      PORT: ${PORT}
+      NODE_ENV: ${NODE_ENV}
+      REQUEST_TIMEOUT: ${REQUEST_TIMEOUT}
+      WEB3_HTTP_PROVIDER: ${WEB3_PROVIDER_URL}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
