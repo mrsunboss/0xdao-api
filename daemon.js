@@ -27,8 +27,7 @@ const injectTimestamp = (pools) => {
   });
 };
 
-const injectTvl = (pools) => {
-  const newPools = [];
+const injectTvl = (pools) =>
   pools.map((pool) => {
     const newPool = pool;
     const poolData = pool.poolData;
@@ -59,10 +58,13 @@ const injectTvl = (pools) => {
       price1Usd: price1,
       totalTvlUsd,
     };
+
+    const tvlUsd = new BigNumber(pool.totalSupply)
+      .times(totalTvlUsd)
+      .div(pool.poolData.totalSupply);
+    newPool.totalTvlUsd = tvlUsd;
     return newPool;
   });
-  return pools;
-};
 
 const getTokensAddresses = (pools) => {
   const tokensMapping = {};
