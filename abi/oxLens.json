@@ -179,6 +179,11 @@
           },
           {
             "internalType": "uint256",
+            "name": "stakedTotalSupply",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "totalSupply",
             "type": "uint256"
           },
@@ -281,6 +286,11 @@
           },
           {
             "internalType": "uint256",
+            "name": "stakedTotalSupply",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
             "name": "totalSupply",
             "type": "uint256"
           },
@@ -345,6 +355,11 @@
             "internalType": "address",
             "name": "stakingAddress",
             "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "stakedTotalSupply",
+            "type": "uint256"
           },
           {
             "internalType": "uint256",
@@ -1126,6 +1141,38 @@
         "internalType": "struct IOxLens.RewardTokenData[]",
         "name": "",
         "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "stakingPoolsAddresses",
+        "type": "address[]"
+      }
+    ],
+    "name": "rewardTokensDatas",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "id", "type": "address" },
+          {
+            "internalType": "uint256",
+            "name": "rewardRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "periodFinish",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IOxLens.RewardTokenData[][]",
+        "name": "",
+        "type": "tuple[][]"
       }
     ],
     "stateMutability": "view",

@@ -66,6 +66,16 @@ const injectTvl = (pools) =>
     return newPool;
   });
 
+const injectApy = (pools) =>
+  pools.map((pool) => {
+    const poolPrice = new BigNumber(pool.totalTvlUsd).div(
+      new BigNumber(pool.poolData.totalSupply).div(10 ** 18)
+    );
+    return {
+      ...pool,
+    };
+  });
+
 const getTokensAddresses = (pools) => {
   const tokensMapping = {};
   pools.forEach((pool) => {
@@ -91,8 +101,8 @@ const fetchOxPools = async () => {
   const pageSize = 50;
   const poolsMap = {};
   let currentPage = 0;
-  const addPools = (pools, reservesData) => {
-    pools.forEach((pool) => {
+  const addPools = (pools, reservesData, stakingData) => {
+    pools.forEach((pool, index) => {
       const solidlyPoolAddress = pool.poolData.id;
       const reserveData = reservesData.find(
         (data) => data.id === solidlyPoolAddress
@@ -102,6 +112,7 @@ const fetchOxPools = async () => {
         ...pool.poolData,
         ...reserveData,
       };
+      newPool.rewardTokens = stakingData[index];
       poolsMap[pool.id] = newPool;
     });
   };
@@ -124,7 +135,17 @@ const fetchOxPools = async () => {
       .call()
       .catch(setError);
 
-    addPools(sanitize(poolsData), sanitize(reservesData));
+    const stakingAddresses = poolsData.map((pool) => pool.stakingAddress);
+    const stakingData = await oxLens.methods
+      .rewardTokensDatas(stakingAddresses)
+      .call()
+      .catch(setError);
+
+    addPools(
+      sanitize(poolsData),
+      sanitize(reservesData),
+      sanitize(stakingData)
+    );
   }
   let pools = Object.values(poolsMap);
   if (error) {
@@ -134,13 +155,18 @@ const fetchOxPools = async () => {
   await setPrices(pools);
   const poolsWithTimestamp = injectTimestamp(pools);
   const poolsWithTimestampAndTvl = injectTvl(poolsWithTimestamp);
+  const poolsWithTimestampTvlAndApy = injectApy(poolsWithTimestampAndTvl);
+
   let totalTvl = new BigNumber(0);
   poolsWithTimestampAndTvl.forEach((pool) => {
     totalTvl = totalTvl.plus(isNaN(pool.totalTvlUsd) ? 0 : pool.totalTvlUsd);
   });
-  console.log("Total TVL:", totalTvl.toFixed());
-  saveData("oxPools.json", poolsWithTimestampAndTvl);
+
+  saveData("oxPools.json", poolsWithTimestampTvlAndApy);
   console.log(`Saved ${pools.length} pools`);
+  console.log("Total TVL:", totalTvl.toFixed());
+
+  return poolsWithTimestampTvlAndApy;
 };
 
 const main = async () => {
@@ -151,7 +177,7 @@ const main = async () => {
   //   const oxSolidRewardsPoolAddress =
   //     "0xDA0067ec0925eBD6D583553139587522310Bec60";
   //   await stakingRewardsData(oxLens, [oxSolidRewardsPoolAddress]);
-  await fetchOxPools();
+  const pools = await fetchOxPools();
 };
 
 main();
