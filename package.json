@@ -14,6 +14,8 @@
     "express": "^4.17.3",
     "fs": "^0.0.1-security",
     "web3": "^1.7.1",
-    "web3-eth-contract": "^1.7.1"
+    "web3-eth-contract": "^1.7.1",
+    "axios": "^0.26.0",
+    "bignumber.js": "^9.0.2"
   }
 }

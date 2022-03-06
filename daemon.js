@@ -1,18 +1,84 @@
 require("dotenv").config();
-var Web3 = require("web3");
+const Web3 = require("web3");
+const BigNumber = require("bignumber.js");
 const oxLensAbi = require("./abi/oxLens.json");
+const solidlyLensAbi = require("./abi/solidlyLens.json");
 const sanitize = require("./utils/sanitize.js");
+const getPrices = require("./utils/prices.js");
 const saveData = require("./utils/saveData.js");
-// import solidlyLensAbi from "abi/solidlyLens.json"
+const stakingRewardsData = require("./utils/stakingRewards.js");
 
 const providerUrl =
   process.env.WEB3_PROVIDER_URL || "https://rpc.ankr.com/fantom";
 const oxLensAddress = "0xDA00137c79B30bfE06d04733349d98Cf06320e69";
+const solidlyLensAddress = "0xDA0024F99A9889E8F48930614c27Ba41DD447c45";
 
-let web3, oxLens, error;
+let web3, oxLens, solidlyLens, error, prices;
 
 const setError = () => {
   error = true;
+};
+
+const injectTimestamp = (pools) => {
+  const timestamp = Math.floor(Date.now() / 1000);
+  return pools.map((pool) => {
+    pool.updated = timestamp;
+    return pool;
+  });
+};
+
+const injectTvl = (pools) => {
+  const newPools = [];
+  pools.map((pool) => {
+    const newPool = pool;
+    const poolData = pool.poolData;
+    const price0Object = prices[poolData.token0Address.toLowerCase()];
+    const price0 = price0Object ? price0Object.usd : 0;
+    const price1Object = prices[poolData.token1Address.toLowerCase()];
+    const price1 = price1Object ? price1Object.usd : 0;
+    const reserve0Normalized = new BigNumber(poolData.token0Reserve)
+      .div(10 ** poolData.token0Decimals)
+      .toFixed();
+    const reserve1Normalized = new BigNumber(poolData.token1Reserve)
+      .div(10 ** poolData.token1Decimals)
+      .toFixed();
+    const reserve0Usd = new BigNumber(reserve0Normalized)
+      .times(price0)
+      .toFixed();
+    const reserve1Usd = new BigNumber(reserve1Normalized)
+      .times(price1)
+      .toFixed();
+    const totalTvlUsd = new BigNumber(reserve0Usd).plus(reserve1Usd).toFixed();
+    newPool.poolData = {
+      ...pool.poolData,
+      reserve0Normalized,
+      reserve1Normalized,
+      reserve0Usd,
+      reserve1Usd,
+      price0Usd: price0,
+      price1Usd: price1,
+      totalTvlUsd,
+    };
+    return newPool;
+  });
+  return pools;
+};
+
+const getTokensAddresses = (pools) => {
+  const tokensMapping = {};
+  pools.forEach((pool) => {
+    tokensMapping[pool.poolData.token0Address] = true;
+    tokensMapping[pool.poolData.token1Address] = true;
+    pool.poolData.bribeTokensAddresses.forEach((bribeTokenAddress) => {
+      tokensMapping[bribeTokenAddress] = true;
+    });
+  });
+  return Object.keys(tokensMapping);
+};
+
+const setPrices = async (pools) => {
+  const tokensAddresses = getTokensAddresses(pools);
+  prices = await getPrices(tokensAddresses);
 };
 
 const fetchOxPools = async () => {
@@ -23,9 +89,18 @@ const fetchOxPools = async () => {
   const pageSize = 50;
   const poolsMap = {};
   let currentPage = 0;
-  const addPools = (pools) => {
+  const addPools = (pools, reservesData) => {
     pools.forEach((pool) => {
-      poolsMap[pool.id] = pool;
+      const solidlyPoolAddress = pool.poolData.id;
+      const reserveData = reservesData.find(
+        (data) => data.id === solidlyPoolAddress
+      );
+      const newPool = pool;
+      newPool.poolData = {
+        ...pool.poolData,
+        ...reserveData,
+      };
+      poolsMap[pool.id] = newPool;
     });
   };
   while (true) {
@@ -40,26 +115,35 @@ const fetchOxPools = async () => {
       .oxPoolsData(addresses)
       .call()
       .catch(setError);
-    addPools(poolsData);
+
+    const solidlyPoolsAddresses = poolsData.map((pool) => pool.poolData.id);
+    const reservesData = await solidlyLens.methods
+      .poolsReservesInfo(solidlyPoolsAddresses)
+      .call()
+      .catch(setError);
+
+    addPools(sanitize(poolsData), sanitize(reservesData));
   }
   let pools = Object.values(poolsMap);
   if (error) {
     console.log("Error reading oxPools");
     return;
   }
-  const timestamp = Math.floor(Date.now() / 1000);
-  const sanitizedPools = sanitize(pools);
-  const sanitizedPoolsWithTimestamp = sanitizedPools.map((pool) => {
-    pool.updated = timestamp;
-    return pool;
-  });
-  saveData("oxPools.json", sanitizedPoolsWithTimestamp);
+  await setPrices(pools);
+  const poolsWithTimestamp = injectTimestamp(pools);
+  const poolsWithTimestampAndTvl = injectTvl(pools);
+  saveData("oxPools.json", poolsWithTimestamp);
   console.log(`Saved ${pools.length} pools`);
 };
 
 const main = async () => {
   web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
   oxLens = new web3.eth.Contract(oxLensAbi, oxLensAddress);
+  solidlyLens = new web3.eth.Contract(solidlyLensAbi, solidlyLensAddress);
+
+  //   const oxSolidRewardsPoolAddress =
+  //     "0xDA0067ec0925eBD6D583553139587522310Bec60";
+  //   await stakingRewardsData(oxLens, [oxSolidRewardsPoolAddress]);
   await fetchOxPools();
 };
 

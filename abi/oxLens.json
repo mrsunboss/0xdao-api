@@ -1073,6 +1073,38 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "stakingPoolAddress",
+        "type": "address"
+      }
+    ],
+    "name": "rewardTokensData",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "id", "type": "address" },
+          {
+            "internalType": "uint256",
+            "name": "rewardRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "periodFinish",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IOxLens.RewardTokenData[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "accountAddress",
         "type": "address"
       },
