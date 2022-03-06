@@ -62,7 +62,7 @@ const injectTvl = (pools) =>
     const tvlUsd = new BigNumber(pool.totalSupply)
       .times(totalTvlUsd)
       .div(pool.poolData.totalSupply);
-    newPool.totalTvlUsd = tvlUsd;
+    newPool.totalTvlUsd = tvlUsd.toFixed();
     return newPool;
   });
 
@@ -133,8 +133,13 @@ const fetchOxPools = async () => {
   }
   await setPrices(pools);
   const poolsWithTimestamp = injectTimestamp(pools);
-  const poolsWithTimestampAndTvl = injectTvl(pools);
-  saveData("oxPools.json", poolsWithTimestamp);
+  const poolsWithTimestampAndTvl = injectTvl(poolsWithTimestamp);
+  let totalTvl = new BigNumber(0);
+  poolsWithTimestampAndTvl.forEach((pool) => {
+    totalTvl = totalTvl.plus(isNaN(pool.totalTvlUsd) ? 0 : pool.totalTvlUsd);
+  });
+  console.log("Total TVL:", totalTvl.toFixed());
+  saveData("oxPools.json", poolsWithTimestampAndTvl);
   console.log(`Saved ${pools.length} pools`);
 };
 
