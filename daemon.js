@@ -250,7 +250,7 @@ const fetchOxPools = async () => {
     totalTvl = totalTvl.plus(isNaN(pool.totalTvlUsd) ? 0 : pool.totalTvlUsd);
   });
 
-  const tld = topLevelData(poolsWithTimestampTvlApyAndBoost);
+  const tld = await topLevelData(poolsWithTimestampTvlApyAndBoost);
 
   saveData("oxPools.json", poolsWithTimestampTvlApyAndBoost);
   saveData("protocol.json", tld);
