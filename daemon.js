@@ -173,6 +173,7 @@ const getTokensAddresses = (pools) => {
 const setPrices = async (pools) => {
   const tokensAddresses = getTokensAddresses(pools);
   prices = await getPrices(tokensAddresses);
+  saveData("prices.json", prices);
 };
 
 const fetchOxPools = async () => {
@@ -181,7 +182,6 @@ const fetchOxPools = async () => {
     .call()
     .catch((err) => {
       setError;
-      console.log("dog", err);
     });
   const pageSize = 50;
   const poolsMap = {};
