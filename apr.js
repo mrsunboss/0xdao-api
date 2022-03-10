@@ -26,22 +26,33 @@ const getApr = async (pool) => {
   const poolPrice = pool.poolPrice;
   const staking = new web3.eth.Contract(erc20Abi, pool.stakingAddress);
   const totalSupply = await staking.methods.totalSupply().call();
-  console.log("Pool", pool);
+
+  //   console.log("Pool", pool);
+  console.log(pool.poolData.symbol, `(${pool.id})`);
+  let totalApr = new BigNumber(0);
   pool.rewardTokens.forEach((token) => {
     const rewardRate = token.rewardRate;
+
     const tokenPrice = getPrice(token.id);
-    const apr = new BigNumber(secondsPerYear)
+    const valuePerYear = new BigNumber(secondsPerYear)
       .times(rewardRate)
       .times(tokenPrice)
-      .div(
-        new BigNumber(poolPrice)
-          .div(10 ** 18)
-          .times(new BigNumber(totalSupply).div(10 ** 18))
-          .times(tokenPrice)
-      );
-    console.log("APR", apr.toFixed());
-    return apr.toFixed();
+      .div(10 ** 18);
+
+    const apr = new BigNumber(valuePerYear)
+      .div(pool.totalTvlUsd)
+      .times(100)
+      .toFixed();
+    console.log("rewards $", valuePerYear.toFixed());
+    console.log("APR", apr);
+    totalApr = totalApr.plus(apr);
   });
+  totalApr = totalApr.toFixed();
+  console.log("TVL", pool.totalTvlUsd);
+  console.log("Total APR", totalApr);
+  console.log("price0", prices[pool.poolData.token0Address.toLowerCase()]);
+  console.log("price1", prices[pool.poolData.token1Address.toLowerCase()]);
+  console.log();
 };
 
 const injectApr = async (pools) => {
@@ -58,6 +69,7 @@ const setup = () => {};
 const calculateApr = async () => {
   web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
   protocol = readData("protocol");
+  prices = readData("prices");
   const pools = readData("oxPools");
   const poolsWithApr = await injectApr(pools);
   console.log("zz", poolsWithApr);
