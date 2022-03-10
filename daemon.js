@@ -13,6 +13,8 @@ const readData = require("./utils/readData.js");
 const stakingRewardsData = require("./utils/stakingRewards.js");
 const { setFlagsFromString } = require("v8");
 
+const topLevelData = require("./daemon_overview.js");
+
 const oxDaoVoter = "0xDA0027f2368bA3cb65a494B1fc7EA7Fd05AB42DD";
 const solidexVoter = "0x26E1A0d851CF28E697870e1b7F053B605C8b060F";
 const providerUrl =
@@ -248,16 +250,19 @@ const fetchOxPools = async () => {
     totalTvl = totalTvl.plus(isNaN(pool.totalTvlUsd) ? 0 : pool.totalTvlUsd);
   });
 
-  //   pools = poolsWithTimestampAndTvl.map((pool) => {
-
-  //   });
-
-  console.log("chad", poolsWithTimestampTvlApyAndBoost);
+  const tld = topLevelData(poolsWithTimestampTvlApyAndBoost);
 
   saveData("oxPools.json", poolsWithTimestampTvlApyAndBoost);
+  saveData("protocol.json", tld);
   console.log(`Saved ${pools.length} pools`);
   console.log("Total TVL:", totalTvl.toFixed());
 
+  const sortedTvl = poolsWithTimestampTvlApyAndBoost.sort((a, b) => {
+    console.log(a.totalTvlUsd);
+    return new BigNumber(b.totalTvlUsd).gt(a.totalTvlUsd);
+  });
+
+  console.log(JSON.stringify(sortedTvl, null, 2));
   return poolsWithTimestampTvlApyAndBoost;
 };
 

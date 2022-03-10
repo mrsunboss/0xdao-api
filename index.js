@@ -9,6 +9,11 @@ app.get("/pools", (req, res) => {
   res.send(data);
 });
 
+app.get("/protocol", (req, res) => {
+  const data = readData("protocol.json");
+  res.send(data);
+});
+
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });
