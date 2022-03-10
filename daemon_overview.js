@@ -109,6 +109,8 @@ const topLevelData = async (pools) => {
 
   const lockedOxdRatio = new BigNumber(lockedOxd).div(oxdTotalSupply).toFixed();
 
+  const updated = Math.floor(Date.now() / 1000);
+
   const data = {
     oxdPrice,
     oxSolidPrice,
@@ -121,8 +123,8 @@ const topLevelData = async (pools) => {
     oxdMarketCap,
     poolsTvl,
     totalTvl,
+    updated,
   };
-  console.log(data);
   return data;
 };
 

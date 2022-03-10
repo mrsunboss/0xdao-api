@@ -263,6 +263,7 @@ const fetchOxPools = async () => {
   });
 
   console.log(JSON.stringify(sortedTvl, null, 2));
+  console.log(tld);
   return poolsWithTimestampTvlApyAndBoost;
 };
 
