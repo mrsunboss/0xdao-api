@@ -10,7 +10,7 @@ app.get("/pools", (req, res) => {
 });
 
 app.get("/protocol", (req, res) => {
-  const data = readData("protocol.json");
+  const data = readData("protocol");
   res.send(data);
 });
 
