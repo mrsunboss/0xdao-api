@@ -48,14 +48,14 @@ const getApr = (pool) => {
     console.log("rewards $", valuePerYear.toFixed());
     console.log("APR", apr);
     if (token.id === solidAddress) {
-      pool.aprSolid = `${apr}%`;
+      pool.aprSolid = apr;
     } else if (token.id === oxdAddress) {
-      pool.oxdApr = `${apr}%`;
+      pool.oxdApr = apr;
     }
     totalApr = totalApr.plus(apr);
   });
   totalApr = totalApr.toFixed(2);
-  pool.totalApr = `${totalApr}%`;
+  pool.totalApr = totalApr;
   console.log("TVL", pool.totalTvlUsd);
   console.log("Total APR", totalApr);
   console.log("price0", prices[pool.poolData.token0Address.toLowerCase()]);
