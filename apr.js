@@ -50,7 +50,7 @@ const getApr = (pool) => {
     if (token.id === solidAddress) {
       pool.aprSolid = apr;
     } else if (token.id === oxdAddress) {
-      pool.oxdApr = apr;
+      pool.aprOxd = apr;
     }
     totalApr = totalApr.plus(apr);
   });
