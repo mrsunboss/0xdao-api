@@ -44,18 +44,18 @@ const getApr = (pool) => {
     const apr = new BigNumber(valuePerYear)
       .div(pool.totalTvlUsd)
       .times(100)
-      .toFixed();
+      .toFixed(2);
     console.log("rewards $", valuePerYear.toFixed());
     console.log("APR", apr);
     if (token.id === solidAddress) {
-      pool.aprSolid = apr;
+      pool.aprSolid = `${apr}%`;
     } else if (token.id === oxdAddress) {
-      pool.oxdApr = apr;
+      pool.oxdApr = `${apr}%`;
     }
     totalApr = totalApr.plus(apr);
   });
-  totalApr = totalApr.toFixed();
-  pool.totalApr = totalApr;
+  totalApr = totalApr.toFixed(2);
+  pool.totalApr = `${totalApr}%`;
   console.log("TVL", pool.totalTvlUsd);
   console.log("Total APR", totalApr);
   console.log("price0", prices[pool.poolData.token0Address.toLowerCase()]);
@@ -77,7 +77,7 @@ const calculateApr = async () => {
   protocol = readData("protocol");
   const pools = readData("oxPools");
   const poolsWithApr = await injectApr(pools, protocol);
-  console.log("zz", poolsWithApr);
+  console.log(poolsWithApr);
   return poolsWithApr;
 };
 
