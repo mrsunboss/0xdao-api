@@ -128,8 +128,8 @@ const injectBoost = async (pools) => {
         solidexBoost = 2.5;
       }
 
-      pool.boostOxDao = oxDaoBoost;
-      pool.boostSolidex = solidexBoost;
+      pool.boostOxDao = oxDaoBoost.toFixed(2);
+      pool.boostSolidex = solidexBoost.toFixed(2);
       return pool;
     })
   );
