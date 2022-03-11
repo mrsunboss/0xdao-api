@@ -55,6 +55,16 @@ const getApr = (pool) => {
     totalApr = totalApr.plus(apr);
   });
   totalApr = totalApr.toFixed(2);
+  if (
+    pool.id === "0x12EE63e73d6BC0327439cdF700ab40849e8e4284" ||
+    pool.id === "0xAf059909235c8F8168bE38cB86717134B9050384" ||
+    pool.id === "0xA3668B13D1064E79B6fFA438f28a3665Bb41D8eF" ||
+    pool.id === "0x8F42e0cd7176Ef472E402Bab0e4bca234a3693C3"
+  ) {
+    pool.aprSolid = "N/A";
+    pool.aprOxd = "N/A";
+    pool.totalApr = "N/A";
+  }
   pool.totalApr = totalApr;
   console.log("TVL", pool.totalTvlUsd);
   console.log("Total APR", totalApr);
