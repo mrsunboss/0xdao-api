@@ -11,7 +11,7 @@ const getPrices = require("./utils/prices.js");
 const saveData = require("./utils/saveData.js");
 const readData = require("./utils/readData.js");
 const stakingRewardsData = require("./utils/stakingRewards.js");
-const { setFlagsFromString } = require("v8");
+const injectApr = require("./apr.js");
 
 const topLevelData = require("./daemon_overview.js");
 
@@ -50,12 +50,15 @@ const injectTvl = (pools) =>
     const reserve1Normalized = new BigNumber(poolData.token1Reserve)
       .div(10 ** poolData.token1Decimals)
       .toFixed();
-    const reserve0Usd = new BigNumber(reserve0Normalized)
-      .times(price0)
-      .toFixed();
-    const reserve1Usd = new BigNumber(reserve1Normalized)
-      .times(price1)
-      .toFixed();
+    let reserve0Usd = new BigNumber(reserve0Normalized).times(price0).toFixed();
+    let reserve1Usd = new BigNumber(reserve1Normalized).times(price1).toFixed();
+
+    if (!price0) {
+      reserve0Usd = reserve1Usd;
+    }
+    if (!price1) {
+      reserve1Usd = reserve0Usd;
+    }
     const totalTvlUsd = new BigNumber(reserve0Usd).plus(reserve1Usd).toFixed();
     newPool.poolData = {
       ...pool.poolData,
@@ -240,9 +243,9 @@ const fetchOxPools = async () => {
   await setPrices(pools);
   const poolsWithTimestamp = injectTimestamp(pools);
   const poolsWithTimestampAndTvl = injectTvl(poolsWithTimestamp);
-  //   const poolsWithTimestampTvlAndApy = await injectApy(poolsWithTimestampAndTvl);
+  const poolsWithTimestampTvlAndApy = await injectApr(poolsWithTimestampAndTvl);
   const poolsWithTimestampTvlApyAndBoost = await injectBoost(
-    poolsWithTimestampAndTvl
+    poolsWithTimestampTvlAndApy
   );
 
   let totalTvl = new BigNumber(0);

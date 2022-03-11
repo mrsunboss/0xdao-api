@@ -10,8 +10,7 @@ const providerUrl =
 
 const oxdAddress = "0xc5A9848b9d145965d821AaeC8fA32aaEE026492d";
 const solidAddress = "0x888EF71766ca594DED1F0FA3AE64eD2941740A20";
-
-let web3;
+let web3, totalWeight, weightsByPool;
 
 const getPrice = (tokenAddress) => {
   if (tokenAddress === oxdAddress) {
@@ -22,14 +21,17 @@ const getPrice = (tokenAddress) => {
   return 0;
 };
 
-const getApr = async (pool) => {
-  const poolPrice = pool.poolPrice;
-  const staking = new web3.eth.Contract(erc20Abi, pool.stakingAddress);
-  const totalSupply = await staking.methods.totalSupply().call();
-
-  //   console.log("Pool", pool);
+const getApr = (pool) => {
   console.log(pool.poolData.symbol, `(${pool.id})`);
   let totalApr = new BigNumber(0);
+
+  if (pool.totalTvlUsd === "0") {
+    pool.totalApr = "N/A";
+    pool.oxdApr = "N/A";
+    pool.solidApr = "N/A";
+    return pool;
+  }
+
   pool.rewardTokens.forEach((token) => {
     const rewardRate = token.rewardRate;
 
@@ -45,35 +47,40 @@ const getApr = async (pool) => {
       .toFixed();
     console.log("rewards $", valuePerYear.toFixed());
     console.log("APR", apr);
+    if (token.id === solidAddress) {
+      pool.aprSolid = apr;
+    } else if (token.id === oxdAddress) {
+      pool.oxdApr = apr;
+    }
     totalApr = totalApr.plus(apr);
   });
   totalApr = totalApr.toFixed();
+  pool.totalApr = totalApr;
   console.log("TVL", pool.totalTvlUsd);
   console.log("Total APR", totalApr);
   console.log("price0", prices[pool.poolData.token0Address.toLowerCase()]);
   console.log("price1", prices[pool.poolData.token1Address.toLowerCase()]);
   console.log();
+  return pool;
 };
 
 const injectApr = async (pools) => {
-  const newPools = pools;
-  for (let poolIndex = 0; poolIndex < pools.length; poolIndex++) {
-    const pool = pools[poolIndex];
-    newPools[poolIndex].apr = await getApr(pool);
-  }
+  protocol = readData("protocol");
+  prices = readData("prices");
+  const newPools = pools.map((pool) => getApr(pool));
   return newPools;
 };
 
-const setup = () => {};
-
 const calculateApr = async () => {
   web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
-  protocol = readData("protocol");
   prices = readData("prices");
+  protocol = readData("protocol");
   const pools = readData("oxPools");
-  const poolsWithApr = await injectApr(pools);
+  const poolsWithApr = await injectApr(pools, protocol);
   console.log("zz", poolsWithApr);
   return poolsWithApr;
 };
 
-calculateApr();
+// calculateApr();
+
+module.exports = injectApr;
