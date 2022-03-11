@@ -55,6 +55,7 @@ const getApr = (pool) => {
     totalApr = totalApr.plus(apr);
   });
   totalApr = totalApr.toFixed(2);
+  pool.totalApr = totalApr;
   if (
     pool.id === "0x12EE63e73d6BC0327439cdF700ab40849e8e4284" ||
     pool.id === "0xAf059909235c8F8168bE38cB86717134B9050384" ||
@@ -65,7 +66,6 @@ const getApr = (pool) => {
     pool.aprOxd = "N/A";
     pool.totalApr = "N/A";
   }
-  pool.totalApr = totalApr;
   console.log("TVL", pool.totalTvlUsd);
   console.log("Total APR", totalApr);
   console.log("price0", prices[pool.poolData.token0Address.toLowerCase()]);
