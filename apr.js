@@ -44,7 +44,7 @@ const getApr = (pool) => {
     const apr = new BigNumber(valuePerYear)
       .div(pool.totalTvlUsd)
       .times(100)
-      .toFixed(2);
+      .toFixed(4);
     console.log("rewards $", valuePerYear.toFixed());
     console.log("APR", apr);
     if (token.id === solidAddress) {
@@ -54,7 +54,7 @@ const getApr = (pool) => {
     }
     totalApr = totalApr.plus(apr);
   });
-  totalApr = totalApr.toFixed(2);
+  totalApr = totalApr.toFixed(4);
   pool.totalApr = totalApr;
   if (
     pool.id === "0x12EE63e73d6BC0327439cdF700ab40849e8e4284" ||
