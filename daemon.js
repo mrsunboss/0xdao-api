@@ -256,7 +256,8 @@ const fetchOxPools = async () => {
   saveData("oxPools.json", poolsWithTimestampTvlApyAndBoost);
   saveData("protocol.json", _protocolData);
   const partnerApr = await getPartnerApr();
-  _protocolData.partnerApr = partnerApr;
+  _protocolData["aprOxSolid"] = partnerApr[0];
+  _protocolData["aprPartner"] = partnerApr[1];
   saveData("protocol.json", _protocolData);
 
   console.log(`Saved ${pools.length} pools`);
