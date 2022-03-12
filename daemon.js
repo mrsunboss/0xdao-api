@@ -320,7 +320,7 @@ const bribes = async (oxPools) => {
     return b.bribeTotalUsd - a.bribeTotalUsd;
   });
 
-  console.log(JSON.stringify(sorted, null, 2));
+  return sorted;
 };
 
 const main = async () => {

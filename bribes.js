@@ -43,7 +43,7 @@ const bribes = async () => {
     };
   }
 
-  console.log(newData);
+  return newData;
 };
 
 bribes();
