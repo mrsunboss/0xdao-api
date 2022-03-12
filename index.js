@@ -16,6 +16,11 @@ app.get("/protocol", (req, res) => {
   res.send(data);
 });
 
+app.get("/bribes", (req, res) => {
+  const data = readData("bribes");
+  res.send(data);
+});
+
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });

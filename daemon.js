@@ -349,15 +349,14 @@ const main = async () => {
   //   console.log(JSON.stringify(bribes, null, 2));
 
   //   await setPrices(pools);
-  //   await bribes(pools);
 
   //   const oxSolidRewardsPoolAddress =
   //     "0xDA0067ec0925eBD6D583553139587522310Bec60";
   //   await stakingRewardsData(oxLens, [oxSolidRewardsPoolAddress]);
   const pools = await fetchOxPools();
 
-  //   const br = await bribes(pools);
-  //   console.log(br);
+  const bribes = await bribes(pools);
+  saveData("bribes.json", bribes);
 };
 
 main();
