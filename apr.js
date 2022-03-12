@@ -3,7 +3,8 @@ const Web3 = require("web3");
 const BigNumber = require("bignumber.js");
 const oxLensAbi = require("./abi/oxLens.json");
 const readData = require("./utils/readData.js");
-const saveData = require("./utils/saveData.js");
+const sanitize = require("./utils/sanitize.js");
+
 const secondsPerYear = 31622400;
 
 const providerUrl =
@@ -36,10 +37,9 @@ const getAprByStakingPools = async (stakingPools) => {
   oxLens = new web3.eth.Contract(oxLensAbi, oxLensAddress);
   const resp = await Promise.all(
     stakingPools.map(async (stakingPool) => {
-      const rewardTokens = await oxLens.methods
-        .rewardTokensData(stakingPool)
-        .call()
-        .catch();
+      const rewardTokens = sanitize(
+        await oxLens.methods.rewardTokensData(stakingPool).call().catch()
+      );
 
       const pool = {
         rewardTokens,

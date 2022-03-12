@@ -267,7 +267,7 @@ const fetchOxPools = async () => {
   });
 
   console.log(JSON.stringify(sortedTvl, null, 2));
-  console.log(_protocolData);
+  console.log(JSON.stringify(_protocolData, null, 2));
   return poolsWithTimestampTvlApyAndBoost;
 };
 
