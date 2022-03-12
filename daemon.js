@@ -10,10 +10,9 @@ const sanitize = require("./utils/sanitize.js");
 const getPrices = require("./utils/prices.js");
 const saveData = require("./utils/saveData.js");
 const readData = require("./utils/readData.js");
-const stakingRewardsData = require("./utils/stakingRewards.js");
-const injectApr = require("./apr.js");
+const { getPartnerApr, injectApr } = require("./apr.js");
 
-const topLevelData = require("./daemon_overview.js");
+const protocolData = require("./protocol.js");
 
 const oxDaoVoter = "0xDA0027f2368bA3cb65a494B1fc7EA7Fd05AB42DD";
 const solidexVoter = "0x26E1A0d851CF28E697870e1b7F053B605C8b060F";
@@ -155,7 +154,6 @@ const injectApy = async (pools) =>
             .times(new BigNumber(totalSupply).div(10 ** 18))
             .times(tokenPrice)
         );
-      console.log(apr.toFixed());
     });
 
     return pools;
@@ -253,20 +251,23 @@ const fetchOxPools = async () => {
     totalTvl = totalTvl.plus(isNaN(pool.totalTvlUsd) ? 0 : pool.totalTvlUsd);
   });
 
-  const tld = await topLevelData(poolsWithTimestampTvlApyAndBoost);
+  const _protocolData = await protocolData(poolsWithTimestampTvlApyAndBoost);
 
   saveData("oxPools.json", poolsWithTimestampTvlApyAndBoost);
-  saveData("protocol.json", tld);
+  saveData("protocol.json", _protocolData);
+  const partnerApr = await getPartnerApr();
+  _protocolData.partnerApr = partnerApr;
+  saveData("protocol.json", _protocolData);
+
   console.log(`Saved ${pools.length} pools`);
   console.log("Total TVL:", totalTvl.toFixed());
 
   const sortedTvl = poolsWithTimestampTvlApyAndBoost.sort((a, b) => {
-    console.log(a.totalTvlUsd);
     return new BigNumber(b.totalTvlUsd).gt(a.totalTvlUsd);
   });
 
   console.log(JSON.stringify(sortedTvl, null, 2));
-  console.log(tld);
+  console.log(_protocolData);
   return poolsWithTimestampTvlApyAndBoost;
 };
 
@@ -353,6 +354,7 @@ const main = async () => {
   //     "0xDA0067ec0925eBD6D583553139587522310Bec60";
   //   await stakingRewardsData(oxLens, [oxSolidRewardsPoolAddress]);
   const pools = await fetchOxPools();
+
   //   const br = await bribes(pools);
   //   console.log(br);
 };

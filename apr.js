@@ -1,28 +1,71 @@
 require("dotenv").config();
 const Web3 = require("web3");
 const BigNumber = require("bignumber.js");
-const erc20Abi = require("./abi/erc20.json");
+const oxLensAbi = require("./abi/oxLens.json");
 const readData = require("./utils/readData.js");
+const saveData = require("./utils/saveData.js");
 const secondsPerYear = 31622400;
 
 const providerUrl =
   process.env.WEB3_PROVIDER_URL || "https://rpc.ankr.com/fantom";
 
 const oxdAddress = "0xc5A9848b9d145965d821AaeC8fA32aaEE026492d";
+const oxLensAddress = "0xDA00137c79B30bfE06d04733349d98Cf06320e69";
 const solidAddress = "0x888EF71766ca594DED1F0FA3AE64eD2941740A20";
-let web3, totalWeight, weightsByPool;
+const partnerRewardsPoolAddress = "0xDA006E87DB89e1C5213D4bfBa771e53c91D920aC";
+const oxdV1RewardsPoolAddress = "0xDA000779663501df3C9Bc308E7cEc70cE6F04211";
+const oxSolidRewardPoolAddress = "0xDA0067ec0925eBD6D583553139587522310Bec60";
+const oxSolidAddress = "0xDA0053F0bEfCbcaC208A3f867BB243716734D809";
+
+let web3;
 
 const getPrice = (tokenAddress) => {
   if (tokenAddress === oxdAddress) {
     return protocol.oxdPrice;
   } else if (tokenAddress === solidAddress) {
     return protocol.solidPrice;
+  } else if (tokenAddress === oxSolidAddress) {
+    return protocol.oxSolidPrice;
   }
   return 0;
 };
 
+const getAprByStakingPools = async (stakingPools) => {
+  protocol = readData("protocol");
+  web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
+  oxLens = new web3.eth.Contract(oxLensAbi, oxLensAddress);
+  const resp = await Promise.all(
+    stakingPools.map(async (stakingPool) => {
+      const rewardTokens = await oxLens.methods
+        .rewardTokensData(stakingPool)
+        .call()
+        .catch();
+
+      const pool = {
+        rewardTokens,
+        totalTvlUsd: 0,
+      };
+      if (stakingPool === oxSolidRewardPoolAddress) {
+        pool.totalTvlUsd = protocol.oxSolidRewardsPoolTvl;
+        pool.name = "oxSolidRewards";
+      } else if (stakingPool === oxdV1RewardsPoolAddress) {
+        pool.totalTvlUsd = protocol.oxdV1RewardsPoolTvl;
+        pool.name = "oxdV1Rewards";
+      } else if (stakingPool === partnerRewardsPoolAddress) {
+        pool.totalTvlUsd = protocol.partnerRewardsPoolTvl;
+        pool.name = "partnerRewards";
+      }
+      pool.stakingPoolAddress = stakingPool;
+
+      const apr = getApr(pool);
+      return apr;
+    })
+  );
+  return resp;
+};
+
 const getApr = (pool) => {
-  console.log(pool.poolData.symbol, `(${pool.id})`);
+  //   console.log(pool.poolData.symbol, `(${pool.id})`);
   let totalApr = new BigNumber(0);
 
   if (pool.totalTvlUsd === "0") {
@@ -45,12 +88,12 @@ const getApr = (pool) => {
       .div(pool.totalTvlUsd)
       .times(100)
       .toFixed(4);
-    console.log("rewards $", valuePerYear.toFixed());
-    console.log("APR", apr);
     if (token.id === solidAddress) {
       pool.aprSolid = apr;
     } else if (token.id === oxdAddress) {
       pool.aprOxd = apr;
+    } else if (token.id === oxSolidAddress) {
+      pool.aprOxSolid = apr;
     }
     totalApr = totalApr.plus(apr);
   });
@@ -66,11 +109,8 @@ const getApr = (pool) => {
     pool.aprOxd = "N/A";
     pool.totalApr = "N/A";
   }
-  console.log("TVL", pool.totalTvlUsd);
-  console.log("Total APR", totalApr);
-  console.log("price0", prices[pool.poolData.token0Address.toLowerCase()]);
-  console.log("price1", prices[pool.poolData.token1Address.toLowerCase()]);
-  console.log();
+  //   console.log("price0", prices[pool.poolData.token0Address.toLowerCase()]);
+  //   console.log("price1", prices[pool.poolData.token1Address.toLowerCase()]);
   return pool;
 };
 
@@ -92,5 +132,14 @@ const calculateApr = async () => {
 };
 
 // calculateApr();
+const getPartnerApr = async () => {
+  return await getAprByStakingPools([
+    oxSolidRewardPoolAddress,
+    partnerRewardsPoolAddress,
+  ]);
+};
 
-module.exports = injectApr;
+module.exports = {
+  injectApr,
+  getPartnerApr,
+};
