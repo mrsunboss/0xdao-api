@@ -355,8 +355,8 @@ const main = async () => {
   //   await stakingRewardsData(oxLens, [oxSolidRewardsPoolAddress]);
   const pools = await fetchOxPools();
 
-  const bribes = await bribes(pools);
-  saveData("bribes.json", bribes);
+  const _bribes = await bribes(pools);
+  saveData("bribes.json", _bribes);
 };
 
 main();
