@@ -17,6 +17,7 @@ const partnerRewardsPoolAddress = "0xDA006E87DB89e1C5213D4bfBa771e53c91D920aC";
 const oxdV1RewardsPoolAddress = "0xDA000779663501df3C9Bc308E7cEc70cE6F04211";
 const oxSolidRewardPoolAddress = "0xDA0067ec0925eBD6D583553139587522310Bec60";
 const oxSolidAddress = "0xDA0053F0bEfCbcaC208A3f867BB243716734D809";
+const vlOxdAddress = "0xDA00527EDAabCe6F97D89aDb10395f719E5559b9";
 
 let web3;
 
@@ -54,7 +55,11 @@ const getAprByStakingPools = async (stakingPools) => {
       } else if (stakingPool === partnerRewardsPoolAddress) {
         pool.totalTvlUsd = protocol.partnerRewardsPoolTvl;
         pool.name = "partnerRewards";
+      } else if (stakingPool === vlOxdAddress) {
+        pool.totalTvlUsd = protocol.vlOxdTvl;
+        pool.name = "vlOxdRewards";
       }
+
       pool.stakingPoolAddress = stakingPool;
 
       const apr = getApr(pool);
@@ -74,9 +79,11 @@ const getApr = (pool) => {
     pool.solidApr = "N/A";
     return pool;
   }
-
   pool.rewardTokens.forEach((token) => {
-    const rewardRate = token.rewardRate;
+    let rewardRate = token.rewardRate;
+    if (pool.stakingPoolAddress === vlOxdAddress) {
+      rewardRate = token.periodFinish; // ABI is backwards
+    }
 
     const tokenPrice = getPrice(token.id);
     const valuePerYear = new BigNumber(secondsPerYear)
@@ -94,6 +101,14 @@ const getApr = (pool) => {
       pool.aprOxd = apr;
     } else if (token.id === oxSolidAddress) {
       pool.aprOxSolid = apr;
+    }
+
+    if (pool.stakingPoolAddress === vlOxdAddress) {
+      console.log("reward rate", rewardRate);
+      console.log("token price", tokenPrice);
+      console.log("value per year", valuePerYear.toFixed());
+      console.log("tvl", pool.totalTvlUsd);
+      console.log("apr", apr);
     }
     totalApr = totalApr.plus(apr);
   });
@@ -131,13 +146,17 @@ const calculateApr = async () => {
   return poolsWithApr;
 };
 
-// calculateApr();
 const getPartnerApr = async () => {
-  return await getAprByStakingPools([
+  const apr = await getAprByStakingPools([
     oxSolidRewardPoolAddress,
     partnerRewardsPoolAddress,
+    vlOxdAddress,
   ]);
+  console.log(apr);
+  return apr;
 };
+
+// getPartnerApr();
 
 module.exports = {
   injectApr,

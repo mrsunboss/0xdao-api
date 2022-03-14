@@ -10,6 +10,7 @@ const sanitize = require("./utils/sanitize.js");
 const getPrices = require("./utils/prices.js");
 const saveData = require("./utils/saveData.js");
 const readData = require("./utils/readData.js");
+const fees = require("./fees.js");
 const { getPartnerApr, injectApr } = require("./apr.js");
 
 const protocolData = require("./protocol.js");
@@ -328,32 +329,10 @@ const main = async () => {
   oxLens = new web3.eth.Contract(oxLensAbi, oxLensAddress);
   solidlyLens = new web3.eth.Contract(solidlyLensAbi, solidlyLensAddress);
 
-  //   let bribes = readData("bribes").slice(0, 30);
-  //   let total = new BigNumber(0);
-  //   bribes.forEach((bribe) => {
-  //     total = total.plus(bribe.bribeTotalUsd);
-  //   });
-  //   total = total.toNumber();
-  //   const bal = 3324266648558889203877993;
-  //   bribes = bribes.map((bribe) => {
-  //     const percent = new BigNumber(bribe.bribeTotalUsd).div(total).toNumber();
-  //     return {
-  //       ...bribe,
-  //       percent: percent,
-  //       vote: new BigNumber(percent).times(bal).toFixed(0),
-  //     };
-  //   });
-  //   const pools = bribes.map((bribe) => bribe.solidPoolAddress);
-  //   const votes = bribes.map((bribe) => bribe.vote);
-  //   //   console.log(pools, ",", votes);
-  //   console.log(JSON.stringify(bribes, null, 2));
-
-  //   await setPrices(pools);
-
-  //   const oxSolidRewardsPoolAddress =
-  //     "0xDA0067ec0925eBD6D583553139587522310Bec60";
-  //   await stakingRewardsData(oxLens, [oxSolidRewardsPoolAddress]);
   const pools = await fetchOxPools();
+
+  //   const _fees = await fees();
+  //   saveData("fees.json", _fees);
 
   //   const _bribes = await bribes(pools);
   //   saveData("bribes.json", _bribes);

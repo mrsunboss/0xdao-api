@@ -135,20 +135,31 @@ const protocolData = async (pools) => {
     .div(10 ** 18)
     .toFixed();
 
+  const vlOxdBalance = new BigNumber(
+    await oxd.methods.balanceOf(vlOxdAddress).call()
+  )
+    .div(10 ** 18)
+    .toFixed();
+
   let poolsTvl = new BigNumber(0);
   pools.forEach((pool) => {
     poolsTvl = poolsTvl.plus(isNaN(pool.totalTvlUsd) ? 0 : pool.totalTvlUsd);
   });
   poolsTvl = poolsTvl.toFixed();
   const lockedSolidTvl = new BigNumber(lockedSolid).times(solidPrice).toFixed();
+  const vlOxdTvl = new BigNumber(vlOxdBalance).times(oxdPrice).toFixed();
   const totalTvl = new BigNumber(poolsTvl)
     .plus(lockedSolidTvl)
     .plus(oxSolidRewardsPoolTvl)
     .plus(partnerRewardsPoolTvl)
     .plus(oxdV1RewardsPoolTvl)
+    .plus(vlOxdTvl)
     .toFixed();
 
-  const lockedOxdRatio = new BigNumber(lockedOxd).div(oxdTotalSupply).toFixed();
+  const lockedOxdRatio = new BigNumber(lockedOxd)
+    .div(oxdTotalSupply)
+    .times(100)
+    .toFixed();
 
   const updated = Math.floor(Date.now() / 1000);
 
@@ -158,6 +169,8 @@ const protocolData = async (pools) => {
     lockedSolid,
     lockedSolidTvl,
     lockedOxd,
+    vlOxdBalance,
+    vlOxdTvl,
     lockedOxdRatio,
     solidPrice,
     oxdTotalSupply,
