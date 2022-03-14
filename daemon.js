@@ -259,6 +259,7 @@ const fetchOxPools = async () => {
   const partnerApr = await getPartnerApr();
   _protocolData["aprOxSolid"] = partnerApr[0];
   _protocolData["aprPartner"] = partnerApr[1];
+  _protocolData["aprVlOxd"] = partnerApr[2];
   saveData("protocol.json", _protocolData);
 
   console.log(`Saved ${pools.length} pools`);
