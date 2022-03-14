@@ -143,9 +143,9 @@ const protocolData = async (pools) => {
   const lockedSolidTvl = new BigNumber(lockedSolid).times(solidPrice).toFixed();
   const totalTvl = new BigNumber(poolsTvl)
     .plus(lockedSolidTvl)
-    .plus(oxSolidRewardsPoolBalance)
-    .plus(partnerRewardsPoolBalance)
-    .plus(oxdV1RewardsPoolBalance)
+    .plus(oxSolidRewardsPoolTvl)
+    .plus(partnerRewardsPoolTvl)
+    .plus(oxdV1RewardsPoolTvl)
     .toFixed();
 
   const lockedOxdRatio = new BigNumber(lockedOxd).div(oxdTotalSupply).toFixed();
