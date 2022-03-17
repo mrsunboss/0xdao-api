@@ -10,6 +10,7 @@
   "author": "0xDAO",
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.1095.0",
     "axios": "^0.26.0",
     "bignumber.js": "^9.0.2",
     "cors": "^2.8.5",

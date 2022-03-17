@@ -325,15 +325,44 @@ const bribes = async (oxPools) => {
   return sorted;
 };
 
+const uploadFile = (fileName) => {
+  var AWS = require("aws-sdk");
+  AWS.config.update({ region: "us-east-1" });
+  var s3 = new AWS.S3({ apiVersion: "2006-03-01" });
+  var uploadParams = { Bucket: "oxdapi", Key: "test", Body: "chad" };
+  var file = `./data/${fileName}.json`;
+
+  // Configure the file stream and obtain the upload parameters
+  var fs = require("fs");
+  var fileStream = fs.createReadStream(file);
+  fileStream.on("error", function (err) {
+    console.log("File Error", err);
+  });
+  uploadParams.Body = fileStream;
+  var path = require("path");
+  uploadParams.Key = path.basename(file);
+
+  // call S3 to retrieve upload file to specified bucket
+  s3.upload(uploadParams, function (err, data) {
+    if (err) {
+      console.log("Error", err);
+    }
+    if (data) {
+      console.log("Upload Success", data.Location);
+    }
+  });
+};
+
 const main = async () => {
   web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
   oxLens = new web3.eth.Contract(oxLensAbi, oxLensAddress);
   solidlyLens = new web3.eth.Contract(solidlyLensAbi, solidlyLensAddress);
 
-  const pools = await fetchOxPools();
-
-  //   const _fees = await fees();
-  //   saveData("fees.json", _fees);
+  await fetchOxPools();
+  uploadFile("pools");
+  uploadFile("protocol");
+  // const _fees = await fees();
+  // saveData("fees.json", _fees);
 
   //   const _bribes = await bribes(pools);
   //   saveData("bribes.json", _bribes);
