@@ -7,7 +7,7 @@ const port = process.env.PORT || 8080;
 const readData = require("./utils/readData.js");
 
 app.get("/pools", (req, res) => {
-  const data = readData("oxPools");
+  const data = readData("pools");
   res.send(data);
 });
 

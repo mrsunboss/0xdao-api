@@ -12,7 +12,7 @@ let web3;
 const fees = async () => {
   web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
   prices = readData("prices");
-  const oxPools = readData("oxPools");
+  const oxPools = readData("pools");
   let totalFees = new BigNumber(0);
   const fees = [];
   for (let i = 0; i < oxPools.length; i++) {

@@ -140,7 +140,7 @@ const calculateApr = async () => {
   web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
   prices = readData("prices");
   protocol = readData("protocol");
-  const pools = readData("oxPools");
+  const pools = readData("pools");
   const poolsWithApr = await injectApr(pools, protocol);
   console.log(poolsWithApr);
   return poolsWithApr;
