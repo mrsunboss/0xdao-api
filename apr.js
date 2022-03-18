@@ -33,7 +33,7 @@ const getPrice = (tokenAddress) => {
 };
 
 const getAprByStakingPools = async (stakingPools) => {
-  protocol = readData("protocol");
+  protocol = await readData("protocol");
   web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
   oxLens = new web3.eth.Contract(oxLensAbi, oxLensAddress);
   const resp = await Promise.all(
@@ -130,17 +130,17 @@ const getApr = (pool) => {
 };
 
 const injectApr = async (pools) => {
-  protocol = readData("protocol");
-  prices = readData("prices");
+  protocol = await readData("protocol");
+  prices = await  readData("prices");
   const newPools = pools.map((pool) => getApr(pool));
   return newPools;
 };
 
 const calculateApr = async () => {
   web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
-  prices = readData("prices");
-  protocol = readData("protocol");
-  const pools = readData("pools");
+  prices = await readData("prices");
+  protocol = await readData("protocol");
+  const pools = await readData("pools");
   const poolsWithApr = await injectApr(pools, protocol);
   console.log(poolsWithApr);
   return poolsWithApr;

@@ -6,18 +6,18 @@ app.use(cors());
 const port = process.env.PORT || 8080;
 const readData = require("./utils/readData.js");
 
-app.get("/pools", (req, res) => {
-  const data = readData("pools");
+app.get("/pools", async(req, res) => {
+  const data = await readData("pools");
   res.send(data);
 });
 
-app.get("/protocol", (req, res) => {
-  const data = readData("protocol");
+app.get("/protocol",async (req, res) => {
+  const data = await readData("protocol");
   res.send(data);
 });
 
-app.get("/bribes", (req, res) => {
-  const data = readData("bribes");
+app.get("/bribes", async(req, res) => {
+  const data = await readData("bribes");
   res.send(data);
 });
 

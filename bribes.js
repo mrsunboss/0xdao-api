@@ -18,7 +18,7 @@ const bribes = async () => {
   web3 = new Web3(new Web3.providers.HttpProvider(providerUrl));
   oxLens = new web3.eth.Contract(oxLensAbi, oxLensAddress);
   //   solidlyLens = new web3.eth.Contract(solidlyLensAbi, solidlyLensAddress);
-  const oxPools = readData("pools");
+  const oxPools = await readData("pools");
   const newData = {};
   for (let i = 0; i < oxPools.length; i++) {
     const pool = oxPools[i];
